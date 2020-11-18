@@ -108,9 +108,9 @@ object enum_basics {
    */
   sealed trait Currency
   object Currency {
-    final case class USD(dollars: Int, cents: Int) extends Currency
-    final case class Euro(euros: Int, cents: Int)  extends Currency
-    final case class Other(amount: Double)         extends Currency
+    final case class USD(dollars: Int, cents: Int)       extends Currency
+    final case class Euro(euros: Int, cents: Int)        extends Currency
+    final case class Other(name: String, amount: Double) extends Currency
   }
 
   /**
@@ -253,10 +253,10 @@ object enum_generics {
    * `Element`, and using `Element` for the type of the field `value` that is stored in some of the
    * cases of the enum.
    */
-  sealed trait ConcatList[Element]
+  sealed trait ConcatList[+Element]
   object ConcatList {
-    case object Empty                                                                       extends ConcatList[Nothing]
-    final case class Concat[Element](left: ConcatList[Element], right: ConcatList[Element]) extends ConcatList[Element]
-    final case class One(value: Int)                                                        extends ConcatList[Int]
+    case object Empty                                                                        extends ConcatList[Nothing]
+    final case class Concat[+Element](left: ConcatList[Element], right: ConcatList[Element]) extends ConcatList[Element]
+    final case class One[+Element](value: Element)                                           extends ConcatList[Element]
   }
 }

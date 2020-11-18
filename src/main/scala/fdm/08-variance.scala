@@ -22,7 +22,7 @@ object subtyping {
    * Determine the relationship between `Animal` and `Dog`, and encode that using either
    * `IsSubtypeOf` or `IsSupertypeOf`.
    */
-  type Exercise1 = TODO
+  type Exercise1 = IsSupertypeOf[Animal, Dog]
 
   /**
    * EXERCISE 2
@@ -30,7 +30,7 @@ object subtyping {
    * Determine the relationship between `Dog` and `Animal` (in that order), and encode that using
    * either `IsSubtypeOf` or `IsSupertypeOf`.
    */
-  type Exercise2 = TODO
+  type Exercise2 = IsSubtypeOf[Dog, Animal]
 
   /**
    * EXERCISE 3
@@ -38,7 +38,7 @@ object subtyping {
    * Determine the relationship between `Animal` and `Cat`, and encode that using either
    * `IsSubtypeOf` or `IsSupertypeOf`.
    */
-  type Exercise3 = TODO
+  type Exercise3 = IsSupertypeOf[Animal, Cat]
 
   /**
    * EXERCISE 4
@@ -46,7 +46,7 @@ object subtyping {
    * Determine the relationship between `Cat` and `Animal` (in that order), and encode that using
    * either `IsSubtypeOf` or `IsSupertypeOf`.
    */
-  type Exercise4 = TODO
+  type Exercise4 = IsSubtypeOf[Cat, Animal]
 
   /**
    * EXERCISE 5

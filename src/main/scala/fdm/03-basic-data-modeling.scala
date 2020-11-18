@@ -1,6 +1,7 @@
 package fdm
 
 import scala.annotation.tailrec
+import _root_.fdm.smart_constructors.Age
 
 /**
  * The following exercises test your ability to model various entities using case classes.
@@ -13,7 +14,11 @@ object product_modeling {
    * Using a case class, create a model of a product, which has a name, description, and a price.
    *
    */
-  final case class Product()
+  final case class Product(
+    name: String,
+    description: String,
+    price: Double
+  )
 
   /**
    * EXERCISE 2
@@ -21,7 +26,10 @@ object product_modeling {
    * Using a case class, create a model of a a user profile, which has a picture URL, and text-
    * based location (indicating the geographic area where the user is from).
    */
-  final case class UserProfile()
+  final case class UserProfile(
+    pictureUrl: java.net.URL,
+    location: String
+  )
 
   /**
    * EXERCISE 3
@@ -29,7 +37,10 @@ object product_modeling {
    * Using a case class, create a model of an item that can be posted on LinkedIn's feed. This
    * item contains a subject and some text.
    */
-  final case class FeedItem()
+  final case class FeedItem(
+    subject: String,
+    text: String
+  )
 
   /**
    * EXERCISE 4
@@ -37,7 +48,11 @@ object product_modeling {
    * Using a case class, create a model of an event, which has an event id, a timestamp, and a
    * map of properties (String/String).
    */
-  final case class Event()
+  final case class Event(
+    id: String,
+    timestamp: java.time.Instant,
+    properties: Map[String, String]
+  )
 }
 
 /**
@@ -54,7 +69,10 @@ object sum_modeling {
    */
   sealed trait Color
   object Color {
-    case object Red extends Color
+    case object Red                                          extends Color
+    case object Green                                        extends Color
+    case object Blue                                         extends Color
+    final case class Custom(red: Int, green: Int, blue: Int) extends Color
   }
 
   /**
@@ -65,7 +83,9 @@ object sum_modeling {
    */
   sealed trait WebEvent
   object WebEvent {
-    final case class PageLoad(url: String) extends WebEvent
+    final case class PageLoad(url: String)    extends WebEvent
+    final case class ButtonClick(cmd: String) extends WebEvent
+    final case class URLClick(url: String)    extends WebEvent
   }
 
   /**
@@ -76,7 +96,13 @@ object sum_modeling {
    */
   sealed trait AgeBracket
   object AgeBracket {
-    case object Child extends AgeBracket
+    case object Baby        extends AgeBracket
+    case object Child       extends AgeBracket
+    case object Teenager    extends AgeBracket
+    case object YoungAdult  extends AgeBracket
+    case object Adult       extends AgeBracket
+    case object MatureAdult extends AgeBracket
+    case object SeniorAdult extends AgeBracket
   }
 
   /**
@@ -84,12 +110,17 @@ object sum_modeling {
    *
    * Using an enum, create a model of a step in a JSON pipeline, which could be transform,
    * aggregate, or save to file.
-   * aggregate.
    */
   type Json
   sealed trait JsonPipelineStep
   object JsonPipeline {
     final case class Transform(fn: Json => Json) extends JsonPipelineStep
+
+    // Whatever the aggregation is doing
+    final case class Aggregate(fn: (Json, Json) => Json) extends JsonPipelineStep
+
+    // Simply indicate true for success, false for failed save
+    final case class SaveToFile(save: Json => Boolean) extends JsonPipelineStep
   }
 }
 
@@ -106,7 +137,35 @@ object mixed_modeling {
    * would consist of a number of items, each with a certain price, and an overall price, including
    * shipping and handling charges.
    */
-  type Order = TODO
+  final case class Order(
+    id: String,
+    customer: Customer,
+    items: List[OrderItem]
+  ) {
+    def chargeTotal: Double  = items.map(_.charges).fold(0.0)(_ + _)
+    def productTotal: Double = items.map(_.productTotal).fold(0.0)(_ + _)
+    def total: Double        = productTotal + chargeTotal
+  }
+
+  final case class Customer(
+    id: String,
+    name: String,
+    eMail: String
+  )
+
+  final case class OrderItem(
+    product: SellableProduct,
+    quantity: Int,
+    charges: Double
+  ) {
+    def productTotal: Double = product.basePrice * quantity
+    def total: Double        = productTotal + charges
+  }
+
+  final case class SellableProduct(
+    name: String,
+    basePrice: Double
+  )
 
   /**
    * EXERCISE 2
@@ -114,7 +173,15 @@ object mixed_modeling {
    * Using only case classes and enums, create a model of an `Email`, which contains a subject,
    * a body, a recipient, and a from address.
    */
-  type Email = TODO
+  final case class Email(
+    from: EMailAddress,
+    recipients: List[EMailAddress],
+    body: String
+  )
+
+  final case class EMailAddress(
+    address: String
+  )
 
   /**
    * EXERCISE 3
@@ -123,7 +190,55 @@ object mixed_modeling {
    * system, which could consist of predefined elements, such as a news feed, a photo gallery,
    * and other elements, arranged in some well-defined way relative to each other.
    */
-  type PageLayout = TODO
+  final case class PageLayout(
+    elem: PageElement
+  )
+
+  sealed trait PageElement
+  object PageElement {
+    case object Empty                                 extends PageElement
+    final case class Gallery()                        extends PageElement
+    final case class NewsFeed()                       extends PageElement
+    final case class Article()                        extends PageElement
+    final case class Row(elements: List[PageElement]) extends PageElement
+    final case class Col(elements: List[PageElement]) extends PageElement
+  }
+
+  // A page with a main part of some stuff and a news feed on the right
+  lazy val layout = PageLayout(
+    PageElement.Row(
+      List(
+        PageElement.Col(
+          List(
+            PageElement.Gallery(),
+            PageElement.Article(),
+            PageElement.Article()
+          )
+        ),
+        PageElement.NewsFeed()
+      )
+    )
+  )
+
+  // A page with a news feed on the top, followed by some articles in a column, next to a gallery
+  lazy val layout2 = PageLayout(
+    PageElement.Col(
+      List(
+        PageElement.NewsFeed(),
+        PageElement.Row(
+          List(
+            PageElement.Col(
+              List(
+                PageElement.Article(),
+                PageElement.Article()
+              )
+            ),
+            PageElement.Gallery()
+          )
+        )
+      )
+    )
+  )
 
   /**
    * EXERCISE 4
@@ -131,7 +246,12 @@ object mixed_modeling {
    * Using only case classes and enums, create a model of a rule that describes the conditions for
    * triggering an email to be sent to a shopper on an e-commerce website.
    */
-  type EmailTriggerRule = TODO
+  sealed trait EmailTriggerRule
+  object EmailTriggerRule {
+    case object Never
+    final case class Once(t : java.time.Instant)
+    final case class Regular(t: java.time.Instant, interval: java.time.Duration)
+  }
 }
 
 object basic_dm_graduation {

@@ -216,8 +216,8 @@ object product_patterns {
    * using a nested pattern match.
    */
   dilbert match {
-    case Employee(name, Address(street, number)) =>
-      println(s"Name: $name, Street $street, Number $number")
+    case Employee(_, Address(_, number)) =>
+      println(s"Dilbert lives in $number")
   }
 
   /**
@@ -307,7 +307,7 @@ object case_class_generics {
    *
    * Construct an event that has a payload type of `Int`.
    */
-  lazy val eventInt = Event[Int]("id", "foo", java.time.Instant.now(), 42)
+  lazy val eventInt = Event("id", "foo", java.time.Instant.now(), 42)
 
   /**
    * EXERCISE 3
@@ -316,5 +316,5 @@ object case_class_generics {
    * called `Body`, which represents the body type of the request, and use this type parameter to
    * define the type of the field called `body` already defined inside the case class.
    */
-  final case class Request[Body](body: Event[Body], sender: String)
+  final case class Request[Body](body: Body, sender: String)
 }

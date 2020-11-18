@@ -11,7 +11,7 @@ object special_types {
    * Find a type existing in the Scala standard library, which we will call `One`, which has a
    * single "inhabitant" (i.e. there exists a single unique value that has this type).
    */
-  type One = TODO
+  type One = Unit
 
   /**
    * EXERCISE 2
@@ -19,7 +19,7 @@ object special_types {
    * Find a type existing in the Scala standard library, which we will call `Zero`, which has no
    * "inhabitants" (i.e. there exists no values of this type).
    */
-  type Zero = TODO
+  type Zero = Nothing
 
   /**
    * EXERCISE 3
@@ -50,8 +50,8 @@ object algebra {
    * equivalence is called an "isomorphism", and it can be regarded as a weaker but more useful
    * definition of equality.
    */
-  def toBA[A, B](ab: (A, B)): (B, A) = TODO
-  def toAB[A, B](ba: (B, A)): (A, B) = TODO
+  def toBA[A, B](ab: (A, B)): (B, A) = (ab._2, ab._1)
+  def toAB[A, B](ba: (B, A)): (A, B) = (ba._2, ba._1)
 
   def roundtripAB[A, B](t: (A, B)): (A, B) = toAB(toBA(t))
   def roundtripBA[A, B](t: (B, A)): (B, A) = toBA(toAB(t))
@@ -65,8 +65,15 @@ object algebra {
    * Although the eithers Either[A, B] and Either[B, A] are not exactly the s;ame, they are
    * isomorphic, as with tuples.
    */
-  def toBA[A, B](ab: Either[A, B]): Either[B, A] = TODO
-  def toAB[A, B](ba: Either[B, A]): Either[A, B] = TODO
+  def toBA[A, B](ab: Either[A, B]): Either[B, A] = ab match {
+    case Left(a)  => Right(a)
+    case Right(b) => Left(b)
+  }
+
+  def toAB[A, B](ba: Either[B, A]): Either[A, B] = ba match {
+    case Left(b)  => Right(b)
+    case Right(a) => Left(a)
+  }
 
   def roundtripAB[A, B](t: Either[A, B]): Either[A, B] = toAB(toBA(t))
   def roundtripBA[A, B](t: Either[B, A]): Either[B, A] = toBA(toAB(t))
@@ -76,8 +83,8 @@ object algebra {
    *
    * As with multiplication of numbers, we also have `A * 1` is the same as `A`.
    */
-  def withUnit[A](v: A): (A, Unit)    = TODO
-  def withoutUnit[A](v: (A, Unit)): A = TODO
+  def withUnit[A](v: A): (A, Unit)    = (v, ())
+  def withoutUnit[A](v: (A, Unit)): A = v._1
 
   def roundtripUnit1[A](v: A): A                 = withoutUnit(withUnit(v))
   def roundtripUnit2[A](t: (A, Unit)): (A, Unit) = withUnit(withoutUnit(t))
@@ -87,8 +94,8 @@ object algebra {
    *
    * As with multiplication of numbers, we also have `A + 0` is the same as `A`.
    */
-  def withNothing[A](v: A): Either[A, Nothing]    = TODO
-  def withoutNothing[A](v: Either[A, Nothing]): A = TODO
+  def withNothing[A](v: A): Either[A, Nothing]    = Left(v)
+  def withoutNothing[A](v: Either[A, Nothing]): A = v.left.get // Can this be done in a better way ??
 
   def roundtripNothing1[A](v: A): A                                   = withoutNothing(withNothing(v))
   def roundtripNothing2[A](t: Either[A, Nothing]): Either[A, Nothing] = withNothing(withoutNothing(t))
@@ -98,8 +105,8 @@ object algebra {
    *
    * As with multiplication of numbers, we also have `A * 0` is the same as `0`.
    */
-  def withValue[A](v: Nothing): (A, Nothing)    = TODO
-  def withoutValue[A](v: (A, Nothing)): Nothing = TODO
+  def withValue[A](v: Nothing): (A, Nothing)    = (v, throw new RuntimeException("Boom"))
+  def withoutValue[A](v: (A, Nothing)): Nothing = throw new RuntimeException("Boom")
 
   def roundtripValue1(v: Nothing): Nothing              = withoutValue(withValue(v))
   def roundtripValue2[A](t: (A, Nothing)): (A, Nothing) = withValue(withoutValue(t))
@@ -109,8 +116,15 @@ object algebra {
    *
    * Algebraic data types follow the distributive property, such that `A * (B + C) = A * B + A * C`.
    */
-  def distribute[A, B, C](tuple: (A, Either[B, C])): Either[(A, B), (A, C)] = TODO
-  def factor[A, B, C](either: Either[(A, B), (A, C)]): (A, Either[B, C])    = TODO
+  def distribute[A, B, C](tuple: (A, Either[B, C])): Either[(A, B), (A, C)] = tuple._2 match {
+    case Left(b)  => Left((tuple._1, b))
+    case Right(c) => Right((tuple._1, c))
+  }
+
+  def factor[A, B, C](either: Either[(A, B), (A, C)]): (A, Either[B, C]) = either match {
+    case Left(ab)  => (ab._1, Left(ab._2))
+    case Right(ac) => (ac._1, Right(ac._2))
+  }
 
   def roundtripDist1[A, B, C](t: (A, Either[B, C])): (A, Either[B, C])           = factor(distribute(t))
   def roundtripDist2[A, B, C](e: Either[(A, B), (A, C)]): Either[(A, B), (A, C)] = distribute(factor(e))
@@ -134,7 +148,7 @@ object algebra_of_types {
    * Create a polymorphic data type whose algebraic definition is `A * B`. Hint: You can use
    * `Tuple2` or create your own version of this data type.
    */
-  type ATimesB
+  type ATimesB[A, B] = (A,B)
 
   /**
    * EXERCISE 2
@@ -142,7 +156,7 @@ object algebra_of_types {
    * Create a polymorphic data type whose algebraic definition is `A + B`. Hint: You can use
    * `Either` or create your own version of this data type.
    */
-  type APlusB
+  type APlusB[A, B] = Either[A, B]
 
   /**
    * EXERCISE 3
