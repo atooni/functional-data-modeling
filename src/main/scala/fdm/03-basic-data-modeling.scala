@@ -247,10 +247,14 @@ object mixed_modeling {
    * triggering an email to be sent to a shopper on an e-commerce website.
    */
   sealed trait EmailTriggerRule
+
   object EmailTriggerRule {
-    case object Never
-    final case class Once(t : java.time.Instant)
-    final case class Regular(t: java.time.Instant, interval: java.time.Duration)
+    case object Abandon extends EmailTriggerRule
+    case class EmailBased(condition: Email => Boolean)
+    case class AfterPurchase(days: Int)
+    case class And(a: EmailTriggerRule, b: EmailTriggerRule)
+    case class Or(a: EmailTriggerRule, b: EmailTriggerRule)
+    case class Not(a: EmailTriggerRule)
   }
 }
 
